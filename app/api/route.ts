@@ -4,7 +4,7 @@ import {users } from '@/db/schema'
 
 
 export async function GET(request: NextRequest) {
-  await db.insert(users).values({ username: 'furkan ' })
+  await db.insert(users).values({ username: 'ahmet tarik ' })
         return new Response('Hello, Next.js!', {
     status: 200,
   })
