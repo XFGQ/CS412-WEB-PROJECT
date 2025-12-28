@@ -1,0 +1,10 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  background-color: #021d37; /* Hafif gri bir arka plan */
+  color: #111827;
+} 
+
+
