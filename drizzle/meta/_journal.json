@@ -1,0 +1,20 @@
+{
+  "version": "7",
+  "dialect": "sqlite",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "6",
+      "when": 1766954358074,
+      "tag": "0000_curvy_echo",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1766954658146,
+      "tag": "0001_adorable_butterfly",
+      "breakpoints": true
+    }
+  ]
+}

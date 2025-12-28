@@ -1,10 +1,16 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
-body {
-  background-color: #021d37; /* Hafif gri bir arka plan */
-  color: #111827;
-} 
+@layer base {
+  body {
+     @apply bg-slate-950 text-slate-50;
+  }
+}
 
-
+@layer components {
+  .text-accent {
+    @apply text-emerald-400;
+  }
+  .bg-accent {
+    @apply bg-emerald-500;
+  }
+}

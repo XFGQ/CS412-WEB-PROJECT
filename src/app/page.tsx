@@ -1,58 +1,66 @@
-import { db } from "../../db";
-import { workouts } from "../../db/schema";
-import { desc } from "drizzle-orm";
-import FitnessChat from "../components/FitnessChat"; // Yeni bileşeni import ettik
-
-export default async function Home() {
-  const allWorkouts = await db.select().from(workouts).orderBy(desc(workouts.id));
-
+export default function Dashboard() {
   return (
-    <main className="min-h-screen bg-gray-50 p-6">
-      <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8">
-        
-        {/* SOL TARAF: Ana İçerik (%66) */}
-        <div className="lg:col-span-2 space-y-6">
-          <header className="flex justify-between items-center mb-8">
-            <div>
-              <h1 className="text-3xl font-extrabold text-gray-900">🏋️ Fitness Takip</h1>
-              <p className="text-gray-500">Antrenman geçmişin ve istatistiklerin</p>
-            </div>
-            <button className="bg-gray-900 text-white px-4 py-2 rounded-lg text-sm hover:bg-black transition">
-              + Yeni Ekle
-            </button>
-          </header>
+    <div className="space-y-8">
+      {/* Üst Karşılama Paneli */}
+      <section className="bg-gray-800/50 p-8 rounded-3xl border border-gray-700 backdrop-blur-sm">
+        <h1 className="text-3xl font-bold">Tekrar Hoş Geldin, Kayra! 👋</h1>
+        <p className="text-gray-400 mt-2">Bugün hedeflerine ulaşmak için harika bir gün.</p>
+        <div className="mt-6 w-full bg-gray-700 h-3 rounded-full overflow-hidden">
+          <div className="bg-emerald-500 h-full w-[65%]" title="Haftalık Hedef %65"></div>
+        </div>
+        <p className="text-sm text-gray-400 mt-2">Haftalık antrenman hedefinin %65'ini tamamladın.</p>
+      </section>
 
-          {/* Antrenman Listesi */}
-          <div className="space-y-4">
-            {allWorkouts.length === 0 ? (
-              <div className="p-8 border-2 border-dashed border-gray-300 rounded-xl text-center">
-                <p className="text-gray-500">Henüz kayıt yok. Sağdaki asistana sormayı dene!</p>
-              </div>
-            ) : (
-              allWorkouts.map((workout) => (
-                <div 
-                  key={workout.id} 
-                  className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition flex justify-between items-center"
-                >
-                  <div>
-                    <h2 className="text-lg font-bold text-gray-800">{workout.name}</h2>
-                    <p className="text-sm text-gray-400">{workout.date}</p>
-                  </div>
-                  <div className="bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-sm font-medium">
-                    {workout.duration} dk
-                  </div>
-                </div>
-              ))
-            )}
+      {/* İstatistik Kartları Grid Yapısı */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <StatCard title="Yakılan Kalori" value="1,240" unit="kcal" icon="🔥" color="text-orange-400" />
+        <StatCard title="Su Tüketimi" value="1.5" unit="Litre" icon="💧" color="text-blue-400" />
+        <StatCard title="Günlük Adım" value="8,432" unit="Adım" icon="👟" color="text-emerald-400" />
+        <StatCard title="Uyku" value="7h 20m" unit="" icon="🌙" color="text-purple-400" />
+      </div>
+
+      {/* Alt Bölüm: Grafik ve Hızlı İşlemler */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="lg:col-span-2 bg-gray-800/40 p-6 rounded-2xl border border-gray-700 min-h-[300px]">
+          <h3 className="text-xl font-semibold mb-4">Haftalık Aktivite</h3>
+          <div className="flex items-end justify-between h-48 px-4">
+            {/* Basit bir grafik görseli (Veritabanına bağlayacağız) */}
+            {[40, 70, 45, 90, 65, 80, 30].map((height, i) => (
+              <div key={i} style={{ height: `${height}%` }} className="w-8 bg-emerald-500/80 rounded-t-md hover:bg-emerald-400 transition-colors"></div>
+            ))}
+          </div>
+          <div className="flex justify-between mt-4 text-sm text-gray-500">
+            <span>Pzt</span><span>Sal</span><span>Çar</span><span>Per</span><span>Cum</span><span>Cmt</span><span>Paz</span>
           </div>
         </div>
 
-        {/* SAĞ TARAF: Chat (%33) */}
-        <div className="lg:col-span-1">
-           <FitnessChat />
+        <div className="space-y-4">
+          <button className="w-full py-4 bg-emerald-600 hover:bg-emerald-500 rounded-xl font-bold transition-all shadow-lg shadow-emerald-900/20">
+            + Antrenman Kaydet
+          </button>
+          <button className="w-full py-4 bg-blue-600 hover:bg-blue-500 rounded-xl font-bold transition-all shadow-lg shadow-blue-900/20">
+            + Öğün Ekle
+          </button>
+          <div className="bg-gray-800/40 p-6 rounded-2xl border border-gray-700">
+            <h3 className="font-semibold mb-2">Yapay Zeka Koçu</h3>
+            <p className="text-sm text-gray-400 italic">"Dün akşamki koşun harikaydı! Bugün biraz dinlenmeye ne dersin?"</p>
+          </div>
         </div>
-
       </div>
-    </main>
+    </div>
+  );
+}
+
+// Yardımcı Bileşen
+function StatCard({ title, value, unit, icon, color }: any) {
+  return (
+    <div className="bg-gray-800/40 p-6 rounded-2xl border border-gray-700 hover:border-gray-500 transition-all">
+      <div className="text-2xl mb-2">{icon}</div>
+      <h4 className="text-gray-400 text-sm font-medium">{title}</h4>
+      <div className="flex items-baseline gap-1 mt-1">
+        <span className={`text-2xl font-bold ${color}`}>{value}</span>
+        <span className="text-xs text-gray-500">{unit}</span>
+      </div>
+    </div>
   );
 }
