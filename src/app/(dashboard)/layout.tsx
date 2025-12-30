@@ -10,101 +10,104 @@ export default async function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  // 1. Giriş yapan kullanıcının ID'sini çerezden al
   const cookieStore = await cookies();
   const userId = cookieStore.get("user_session")?.value;
 
-  // Eğer giriş yapılmamışsa login'e at (Güvenlik önlemi)
-  if (!userId) {
-    redirect("/login");
-  }
+  if (!userId) redirect("/login");
 
-  // 2. Bu ID'ye sahip kullanıcıyı veritabanından bul
   const user = await db.select().from(users).where(eq(users.id, Number(userId))).get();
+  
+  if (!user) redirect("/login");
 
-  // Kullanıcı bulunamazsa çıkış yap
-  if (!user) {
-    redirect("/login");
-  }
-
-  // İsimden baş harfleri alma (Örn: Kayra Can -> KC)
-  const initials = user.fullName
-    .split(" ")
-    .map((n) => n[0])
-    .join("")
-    .toUpperCase()
-    .slice(0, 2);
+  // Kullanıcı adının baş harfleri
+  const initials = user.fullName ? user.fullName.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2) : "U";
 
   return (
-    <div className="flex min-h-screen bg-slate-950 text-slate-100 font-sans">
-      {/* --- SOL SIDEBAR --- */}
-      <aside className="w-64 hidden md:flex flex-col border-r border-slate-800 bg-slate-900 fixed h-full z-20">
-        <div className="h-16 flex items-center px-6 border-b border-slate-800">
-          <span className="text-xl font-bold bg-gradient-to-r from-emerald-400 to-cyan-400 text-transparent bg-clip-text">
-            FitTrack Pro
-          </span>
-        </div>
-        
-        <nav className="flex-1 px-4 space-y-2 mt-6">
-          <SidebarItem href="/" icon="📊" text="Genel Bakış" />
-          <SidebarItem href="/workouts" icon="💪" text="Antrenmanlarım" />
-          <SidebarItem href="/nutrition" icon="🍎" text="Beslenme Takibi" />
-          <SidebarItem href="/workouts/guide" icon="📚" text="Egzersiz Rehberi" />
-          <SidebarItem href="/stats" icon="📈" text="İstatistikler" />
-        </nav>
+    <div className="flex h-screen bg-slate-950 overflow-hidden">
+      
+      {/* --- 1. SOL SIDEBAR (SABİT MENÜ) --- */}
+      <aside className="w-64 bg-slate-900 border-r border-slate-800 flex-shrink-0 flex flex-col justify-between hidden md:flex">
+        <div>
+          {/* Logo Alanı */}
+          <div className="h-16 flex items-center px-6 border-b border-slate-800">
+            <span className="text-2xl font-bold bg-gradient-to-r from-emerald-400 to-cyan-400 text-transparent bg-clip-text">
+              FitTrack
+            </span>
+            <span className="ml-2 text-xs bg-emerald-500/10 text-emerald-400 px-2 py-0.5 rounded border border-emerald-500/20">PRO</span>
+          </div>
 
-        <div className="p-4 border-t border-slate-800">
-          <div className="bg-slate-800/50 rounded-xl p-4">
-             <p className="text-xs text-slate-400 mb-2">Haftalık Hedef</p>
-             <div className="w-full bg-slate-700 h-2 rounded-full overflow-hidden">
-                <div className="bg-emerald-500 w-[70%] h-full"></div>
-             </div>
+          {/* Menü Linkleri */}
+          <nav className="p-4 space-y-1">
+            <SidebarItem href="/" icon="🏠" text="Genel Bakış" />
+            <SidebarItem href="/workouts" icon="💪" text="Antrenmanlar" />
+            <SidebarItem href="/nutrition" icon="🥗" text="Beslenme" />
+            <SidebarItem href="/stats" icon="📈" text="Raporlar" />
+            <div className="pt-4 pb-2">
+              <p className="px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Destek</p>
+            </div>
+            <SidebarItem href="/workouts/guide" icon="📚" text="Hareket Rehberi" />
+            <SidebarItem href="/settings" icon="⚙️" text="Ayarlar" />
+          </nav>
+        </div>
+
+        {/* Alt Profil Kartı */}
+        <div className="p-4 border-t border-slate-800 bg-slate-900/50">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-emerald-600 flex items-center justify-center font-bold text-white shadow-lg shadow-emerald-900/20">
+              {initials}
+            </div>
+            <div className="overflow-hidden">
+              <p className="text-sm font-medium text-white truncate">{user.fullName}</p>
+              <p className="text-xs text-slate-400 truncate">{user.email}</p>
+            </div>
           </div>
         </div>
       </aside>
 
-      {/* --- SAĞ TARAFTAKİ ANA ALAN --- */}
-      <div className="flex-1 md:ml-64 flex flex-col">
+      {/* --- 2. SAĞ İÇERİK ALANI --- */}
+      <div className="flex-1 flex flex-col h-full overflow-hidden">
         
-        {/* --- ÜST HEADER (TOP BAR) - DİNAMİK İSİM BURADA --- */}
-        <header className="h-16 bg-slate-900/80 backdrop-blur-md border-b border-slate-800 sticky top-0 z-10 flex items-center justify-between px-8">
-          {/* Mobil Menü İkonu (Görsel olarak) */}
-          <div className="md:hidden text-slate-400">☰</div> 
+        {/* --- ÜST HEADER (TOP BAR) --- */}
+        <header className="h-16 bg-slate-950/80 backdrop-blur-md border-b border-slate-800 flex items-center justify-between px-6 z-10 sticky top-0">
+          {/* Mobil Menü Butonu (Sadece mobilde görünür) */}
+          <button className="md:hidden text-slate-400 text-xl">☰</button>
+          
+          {/* Sayfa Başlığı veya Arama */}
+          <div className="hidden md:block text-slate-400 text-sm">
+            Bugün: <span className="text-slate-200 font-medium">{new Date().toLocaleDateString('tr-TR')}</span>
+          </div>
 
-          {/* Sağ Taraftaki Kullanıcı Alanı */}
-          <div className="flex items-center gap-4 ml-auto">
-            <div className="text-right hidden sm:block">
-              <p className="text-sm font-semibold text-white">{user.fullName}</p>
-              <p className="text-xs text-emerald-400">Pro Üye</p>
-            </div>
-            
-            {/* Profil Resmi (Avatar) */}
-            <div className="h-10 w-10 rounded-full bg-gradient-to-tr from-emerald-500 to-cyan-500 p-[2px]">
-              <div className="h-full w-full rounded-full bg-slate-900 flex items-center justify-center text-sm font-bold text-emerald-400">
-                {initials}
-              </div>
-            </div>
+          {/* Sağ Köşe Aksiyonları */}
+          <div className="flex items-center gap-4">
+            <button className="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center text-slate-400 hover:text-white transition-colors">
+              🔔
+            </button>
+            <div className="h-8 w-[1px] bg-slate-800"></div>
+             {/* Buraya çıkış yap butonu veya profil menüsü gelebilir */}
+             <span className="text-sm text-slate-300">Hoş geldin, <span className="text-emerald-400 font-semibold">{user.fullName.split(' ')[0]}</span></span>
           </div>
         </header>
 
-        {/* --- SAYFA İÇERİĞİ --- */}
-        <main className="flex-1 p-8 overflow-y-auto">
-          {children}
+        {/* --- SCROLL EDİLEBİLİR ANA İÇERİK --- */}
+        <main className="flex-1 overflow-y-auto p-6 md:p-8 scroll-smooth">
+          <div className="max-w-6xl mx-auto">
+            {children}
+          </div>
         </main>
       </div>
     </div>
   );
 }
 
-// Sidebar Link Bileşeni
+// Menü Elemanı Bileşeni (Aktiflik durumu eklenebilir)
 function SidebarItem({ href, icon, text }: { href: string, icon: string, text: string }) {
   return (
     <Link 
       href={href} 
-      className="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800 hover:text-emerald-400 transition-all duration-200 hover:pl-6 group"
+      className="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800 hover:text-white transition-all duration-200 group"
     >
-      <span className="text-xl group-hover:scale-110 transition-transform">{icon}</span>
-      <span className="font-medium">{text}</span>
+      <span className="text-lg opacity-70 group-hover:opacity-100 group-hover:scale-110 transition-all">{icon}</span>
+      <span className="font-medium text-sm">{text}</span>
     </Link>
   );
 }

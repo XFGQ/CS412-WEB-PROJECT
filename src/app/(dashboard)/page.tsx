@@ -1,82 +1,100 @@
 import { db } from "../../../db";
-import { nutritionLogs, workoutLogs } from "../../../db/schema";
+import { nutritionLogs, workoutLogs, users } from "../../..//db/schema";
+import { eq, desc } from "drizzle-orm";
+import { cookies } from "next/headers";
 import { logoutAction } from "@/actions";
 
-export default async function Dashboard() {
-  const nutritionData = await db.select().from(nutritionLogs);
-  const workoutData = await db.select().from(workoutLogs);
-  
-  const totalCaloriesIn = nutritionData.reduce((acc, curr) => acc + curr.calories, 0);
-  const totalWorkouts = workoutData.length;
-  const totalWorkoutMinutes = workoutData.reduce((acc, curr) => acc + (curr.durationMinutes || 0), 0);
-
+// Kart Bileşeni (Aynı)
+function StatCard({ title, value, unit, icon, color, bg }: any) {
   return (
-    <div className="space-y-8 fade-in">
-      {/* Hero Bölümü: Özet Bilgi */}
-      <div className="relative overflow-hidden bg-gradient-to-r from-emerald-900/40 to-slate-900 border border-emerald-500/20 rounded-3xl p-8">
-        <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-          <div>
-            <h1 className="text-3xl font-bold text-white mb-2">Bugünün Özeti ⚡</h1>
-            <p className="text-slate-400">Hedeflerine ulaşmak için harika bir gün. Aktiviteni kaydetmeyi unutma!</p>
-          </div>
-          <form action={logoutAction}>
-            <button className="bg-slate-800 hover:bg-red-500/20 hover:text-red-400 text-slate-300 px-5 py-2.5 rounded-xl text-sm font-medium transition-all border border-slate-700 hover:border-red-500/50">
-              Oturumu Kapat
-            </button>
-          </form>
-        </div>
-        {/* Arkaplan Efekti */}
-        <div className="absolute top-0 right-0 -mt-10 -mr-10 w-64 h-64 bg-emerald-500/10 blur-3xl rounded-full pointer-events-none"></div>
+    <div className="bg-slate-900/50 p-6 rounded-2xl border border-slate-800 hover:border-slate-700 transition-all">
+      <div className="flex justify-between items-start mb-4">
+        <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-2xl ${bg} ${color}`}>{icon}</div>
       </div>
-
-      {/* İstatistik Kartları */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <StatCard title="Alınan Kalori" value={totalCaloriesIn} unit="kcal" icon="🍎" color="text-orange-400" bg="bg-orange-400/10" />
-        <StatCard title="Antrenman" value={totalWorkouts} unit="Adet" icon="💪" color="text-emerald-400" bg="bg-emerald-400/10" />
-        <StatCard title="Aktif Süre" value={totalWorkoutMinutes} unit="Dk" icon="⏱️" color="text-blue-400" bg="bg-blue-400/10" />
-        <StatCard title="Su Tüketimi" value="1.5" unit="Lt" icon="💧" color="text-cyan-400" bg="bg-cyan-400/10" />
-      </div>
-
-      {/* Alt Bölüm */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-         {/* Grafik Alanı */}
-         <div className="lg:col-span-2 bg-slate-900/50 p-6 rounded-2xl border border-slate-800 min-h-[300px] flex flex-col justify-center items-center text-slate-500">
-            <span className="text-4xl mb-2">📊</span>
-            <p>Haftalık Aktivite Grafiği</p>
-            <span className="text-xs text-slate-600 mt-2">(Chart.js eklenecek)</span>
-         </div>
-
-         {/* AI Önerisi */}
-         <div className="bg-gradient-to-b from-slate-800/50 to-slate-900/50 p-6 rounded-2xl border border-slate-800">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-8 h-8 rounded-lg bg-indigo-500/20 flex items-center justify-center text-indigo-400">✨</div>
-              <h3 className="font-bold text-white">AI Koçun Diyor ki:</h3>
-            </div>
-            <p className="text-slate-400 text-sm leading-relaxed">
-              "Son 3 gündür kardiyo ağırlıklı çalıştın. Kaslarını şaşırtmak için bugün hafif bir ağırlık antrenmanı veya Yoga yapmayı deneyebilirsin."
-            </p>
-         </div>
+      <h4 className="text-slate-400 text-sm font-medium">{title}</h4>
+      <div className="flex items-baseline gap-2 mt-1">
+        <span className="text-2xl font-bold text-white">{value}</span>
+        <span className="text-xs text-slate-500 font-medium">{unit}</span>
       </div>
     </div>
   );
 }
 
-// Güncellenmiş Kart Tasarımı
-function StatCard({ title, value, unit, icon, color, bg }: any) {
+export default async function Dashboard() {
+  const cookieStore = await cookies();
+  const userId = Number(cookieStore.get("user_session")?.value);
+  
+  const user = await db.select().from(users).where(eq(users.id, userId)).get();
+  const nutrition = await db.select().from(nutritionLogs).where(eq(nutritionLogs.userId, userId));
+  const workouts = await db.select().from(workoutLogs).where(eq(workoutLogs.userId, userId)).orderBy(desc(workoutLogs.id)).limit(3);
+
+  const totalCalories = nutrition.reduce((acc, curr) => acc + curr.calories, 0);
+  const calorieGoal = user?.dailyCalorieGoal || 2000;
+  const remainingCalories = calorieGoal - totalCalories;
+
   return (
-    <div className="bg-slate-900/50 p-6 rounded-2xl border border-slate-800 hover:border-slate-700 hover:bg-slate-800/80 transition-all group cursor-default">
-      <div className="flex justify-between items-start mb-4">
-        <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-2xl ${bg} ${color}`}>
-          {icon}
+    <div className="space-y-8 fade-in">
+      
+      {/* Üst Banner */}
+      <div className="relative overflow-hidden bg-gradient-to-br from-emerald-900/50 to-slate-900 border border-emerald-500/20 rounded-3xl p-8 flex justify-between items-center">
+        <div>
+          <h1 className="text-3xl font-bold text-white mb-2">Merhaba, {user?.fullName.split(' ')[0]}! 👋</h1>
+          <p className="text-slate-300">Bugün hedefine ulaşmak için <span className="font-bold text-emerald-400">{remainingCalories > 0 ? remainingCalories : 0} kcal</span> daha alman gerekiyor.</p>
         </div>
-        {/* Sağ üstte minik bir artış ikonu */}
-        <span className="text-xs font-medium text-emerald-500 bg-emerald-500/10 px-2 py-1 rounded-full">+2%</span>
+        <form action={logoutAction}>
+           <button className="bg-slate-800 border border-slate-700 text-slate-300 px-4 py-2 rounded-xl text-sm hover:bg-slate-700 transition-colors">Çıkış</button>
+        </form>
       </div>
-      <div>
-        <h4 className="text-slate-400 text-sm font-medium">{title}</h4>
-        <div className="flex items-baseline gap-2 mt-1">
-          <span className="text-2xl font-bold text-white group-hover:scale-105 transition-transform origin-left">{value}</span>
-          <span className="text-xs text-slate-500 font-medium">{unit}</span>
+
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <StatCard title="Alınan Kalori" value={totalCalories} unit={`/ ${calorieGoal}`} icon="🔥" color="text-orange-400" bg="bg-orange-400/10" />
+        <StatCard title="Toplam Antrenman" value={workouts.length} unit="Adet" icon="💪" color="text-emerald-400" bg="bg-emerald-400/10" />
+        <StatCard title="Mevcut Kilo" value={user?.weight || "-"} unit="kg" icon="⚖️" color="text-blue-400" bg="bg-blue-400/10" />
+        <StatCard title="Hedef Kilo" value={user?.goalWeight || "-"} unit="kg" icon="🎯" color="text-purple-400" bg="bg-purple-400/10" />
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Son Aktiviteler Listesi */}
+        <div className="lg:col-span-2 bg-slate-900/50 p-6 rounded-2xl border border-slate-800">
+           <h3 className="font-bold text-white mb-4 flex items-center gap-2">
+             <span className="w-2 h-2 rounded-full bg-emerald-500"></span> Son Aktivitelerin
+           </h3>
+           <div className="space-y-3">
+             {workouts.length === 0 ? <p className="text-slate-500 text-sm">Henüz antrenman kaydı yok.</p> : 
+               workouts.map((w) => (
+               <div key={w.id} className="flex items-center justify-between p-4 bg-slate-800/30 rounded-xl hover:bg-slate-800/60 transition-colors">
+                 <div className="flex items-center gap-3">
+                   <div className="bg-slate-800 p-2 rounded-lg text-xl">🏃‍♂️</div>
+                   <div>
+                     <p className="font-medium text-white">{w.notes}</p>
+                     <p className="text-xs text-slate-500">{w.date || "Bugün"}</p>
+                   </div>
+                 </div>
+                 <div className="text-right">
+                   <p className="text-emerald-400 font-bold text-sm">
+                     {w.durationMinutes ? `${w.durationMinutes} dk` : `${w.weightLifted} kg`}
+                   </p>
+                 </div>
+               </div>
+             ))}
+           </div>
+        </div>
+
+        {/* Sporcu İpuçları / Hatırlatma */}
+        <div className="space-y-6">
+          <div className="bg-gradient-to-b from-blue-900/20 to-slate-900/50 p-6 rounded-2xl border border-blue-500/20">
+             <h3 className="font-bold text-blue-400 mb-2">💧 Su Hatırlatıcısı</h3>
+             <p className="text-sm text-slate-400 mb-4">Günde en az 2.5 litre su içmeyi unutma. Performansın için hidrasyon şart.</p>
+             <div className="w-full bg-slate-700 h-2 rounded-full overflow-hidden">
+                <div className="bg-blue-500 w-[60%] h-full"></div>
+             </div>
+             <p className="text-right text-xs text-blue-400 mt-1">%60 Tamamlandı</p>
+          </div>
+
+          <div className="bg-slate-900/50 p-6 rounded-2xl border border-slate-800">
+            <h3 className="font-bold text-white mb-2">Sıradaki Hedef</h3>
+            <p className="text-sm text-slate-400">Yarın bacak günü! Squat rekorunu kırmak için iyi dinlen.</p>
+          </div>
         </div>
       </div>
     </div>

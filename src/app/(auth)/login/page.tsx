@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { loginAction } from "../../../actions";
+import { loginAction } from "@/actions"; // Doğru action
 
 export default function LoginPage() {
   return (
@@ -10,42 +10,28 @@ export default function LoginPage() {
           <p className="mt-2 text-sm text-slate-400">Devam etmek için giriş yapın.</p>
         </div>
         
-        {/* Form action'ı bağlandı */}
+        {/* URL'de error varsa hata mesajı göster */}
+        {/* Not: Bunu okumak için useSearchParams gerekir ama şimdilik basit tutalım */}
+
         <form action={loginAction} className="mt-8 space-y-6">
           <div className="space-y-4">
             <div>
               <label htmlFor="email" className="text-sm font-medium text-slate-300">Email Adresi</label>
-              <input
-                id="email"
-                name="email"
-                type="email"
-                required
-                className="w-full mt-1 px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none text-slate-200"
-                placeholder="test@test.com"
-              />
+              <input name="email" type="email" required className="w-full mt-1 px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none text-slate-200" placeholder="mail@site.com" />
             </div>
             <div>
               <label htmlFor="password" className="text-sm font-medium text-slate-300">Şifre</label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                required
-                className="w-full mt-1 px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none text-slate-200"
-                placeholder="••••••••"
-              />
+              <input name="password" type="password" required className="w-full mt-1 px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none text-slate-200" placeholder="••••••••" />
             </div>
           </div>
 
-          <button
-            type="submit"
-            className="w-full py-3.5 px-4 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold rounded-xl shadow-lg transition-all"
-          >
+          <button type="submit" className="w-full py-3.5 px-4 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold rounded-xl shadow-lg transition-all">
             Giriş Yap
           </button>
         </form>
 
         <p className="text-center text-sm text-slate-500">
+          Hesabın yok mu?{" "}
           <Link href="/register" className="font-medium text-emerald-400 hover:text-emerald-300">
             Kayıt Ol
           </Link>
