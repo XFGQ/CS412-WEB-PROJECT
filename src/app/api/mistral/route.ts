@@ -1,0 +1,98 @@
+import { Mistral } from "@mistralai/mistralai";
+
+const apiKey =
+	process.env.MISTRAL_API_KEY || "qTrRiKIoJAHZ257G9nUrfVlvWeaang1h";
+const client = new Mistral({ apiKey });
+
+// SendMessage fonksiyonu - direkt çağrılabilir
+export async function sendMessage(prompt: string): Promise<string> {
+	try {
+		if (!prompt) {
+			throw new Error("Prompt boş olamaz");
+		}
+
+		// Mistral API ile chat
+		const chatResponse = await client.chat.complete({
+			model: "mistral-large-latest",
+			messages: [
+				{
+					role: "user",
+					content: prompt,
+				},
+			],
+		});
+
+		const content = chatResponse.choices[0]?.message?.content;
+
+		// Content string veya array olabilir, string'e çevir
+		let text: string;
+		if (typeof content === "string") {
+			text = content;
+		} else if (Array.isArray(content)) {
+			// Array ise sadece text içeren chunk'ları al
+			text = content
+				.map((chunk) => {
+					if (typeof chunk === "string") return chunk;
+					// ContentChunk tipinde text property kontrolü
+					if (chunk && typeof chunk === "object" && "text" in chunk) {
+						const chunkWithText = chunk as { text?: string };
+						return chunkWithText.text || "";
+					}
+					return "";
+				})
+				.filter(Boolean)
+				.join("");
+		} else {
+			throw new Error("Mistral API'den yanıt alınamadı");
+		}
+
+		if (!text) {
+			throw new Error("Mistral API'den yanıt alınamadı");
+		}
+
+		return text;
+	} catch (error) {
+		console.error("API CRASH:", error);
+		const errorMessage =
+			error instanceof Error ? error.message : "Unknown error";
+
+		// Daha detaylı hata mesajı
+		if (errorMessage.includes("API_KEY") || errorMessage.includes("401")) {
+			throw new Error(
+				"Geçersiz API anahtarı. Lütfen API anahtarınızı kontrol edin.",
+			);
+		} else if (errorMessage.includes("quota") || errorMessage.includes("429")) {
+			throw new Error("API kotası aşıldı. Lütfen daha sonra tekrar deneyin.");
+		} else if (errorMessage.includes("model")) {
+			throw new Error("Model bulunamadı. Model adını kontrol edin.");
+		}
+
+		throw new Error(errorMessage);
+	}
+}
+
+// API endpoint olarak da çalışabilir
+export async function POST(req: Request) {
+	try {
+		const body = await req.json();
+
+		if (!body?.message) {
+			return Response.json({ error: "Missing message" }, { status: 400 });
+		}
+
+		const text = await sendMessage(body.message);
+		return Response.json({ text });
+	} catch (error) {
+		const errorMessage =
+			error instanceof Error ? error.message : "Unknown error";
+
+		return Response.json(
+			{
+				error: "Internal Server Error",
+				details: errorMessage,
+			},
+			{ status: 500 },
+		);
+	}
+}
+
