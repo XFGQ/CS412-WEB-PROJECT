@@ -2,7 +2,7 @@ import { db } from "../../../../db";
 import { nutritionLogs } from "../../../../db/schema";
 import { addMeal } from "@/actions";
 import { desc } from "drizzle-orm";
-import NutritionChatModal from "@/components/NutritionChatModal";
+import NutritionChatModal from "@/components/NutritionButtonChat";
 
 export default async function NutritionPage() {
 	const meals = await db

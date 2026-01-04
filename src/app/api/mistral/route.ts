@@ -1,20 +1,27 @@
 import { Mistral } from "@mistralai/mistralai";
 
-const apiKey =
-	process.env.MISTRAL_API_KEY || "qTrRiKIoJAHZ257G9nUrfVlvWeaang1h";
+const apiKey = process.env.MISTRAL_API_KEY;
+
+if (!apiKey) {
+	throw new Error("MISTRAL_API_KEY not defined");
+}
+
 const client = new Mistral({ apiKey });
 
-// SendMessage fonksiyonu - direkt çağrılabilir
 export async function sendMessage(prompt: string): Promise<string> {
 	try {
 		if (!prompt) {
 			throw new Error("Prompt boş olamaz");
 		}
 
-		// Mistral API ile chat
 		const chatResponse = await client.chat.complete({
 			model: "mistral-large-latest",
 			messages: [
+				{
+					role: "system",
+					content:
+						"Sen uzman bir fitness ve diyet koçusun. Sadece fitness, egzersiz, beslenme ve diyet konularında konuşabilirsin. Bu konular dışındaki TÜM sorulara cevap verme. Konu dışı bir soru gelirse sadece 'Bu konuda yardımcı olamam.' yaz. Markdown, yıldız (*), tire (-), madde işareti, kalın veya biçimlendirilmiş yazı kullanma. Yanıtlarını sade, düz metin olarak yaz.",
+				},
 				{
 					role: "user",
 					content: prompt,
@@ -24,16 +31,13 @@ export async function sendMessage(prompt: string): Promise<string> {
 
 		const content = chatResponse.choices[0]?.message?.content;
 
-		// Content string veya array olabilir, string'e çevir
 		let text: string;
 		if (typeof content === "string") {
 			text = content;
 		} else if (Array.isArray(content)) {
-			// Array ise sadece text içeren chunk'ları al
 			text = content
 				.map((chunk) => {
 					if (typeof chunk === "string") return chunk;
-					// ContentChunk tipinde text property kontrolü
 					if (chunk && typeof chunk === "object" && "text" in chunk) {
 						const chunkWithText = chunk as { text?: string };
 						return chunkWithText.text || "";
@@ -71,7 +75,6 @@ export async function sendMessage(prompt: string): Promise<string> {
 	}
 }
 
-// API endpoint olarak da çalışabilir
 export async function POST(req: Request) {
 	try {
 		const body = await req.json();
@@ -95,4 +98,3 @@ export async function POST(req: Request) {
 		);
 	}
 }
-

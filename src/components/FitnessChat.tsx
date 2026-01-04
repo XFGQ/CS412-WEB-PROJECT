@@ -11,7 +11,7 @@ type Message = {
 };
 
 type FitnessChatProps = {
-	mode: string; // 👈 bu aslında summary
+	mode: string;
 };
 
 export default function FitnessChat({ mode }: FitnessChatProps) {
@@ -31,7 +31,7 @@ export default function FitnessChat({ mode }: FitnessChatProps) {
 					"Content-Type": "application/json",
 				},
 				body: JSON.stringify({
-					message: mode, // ✅ summary direkt buradan gidiyor
+					message: mode,
 				}),
 			});
 
