@@ -13,7 +13,7 @@ export default function DietChatModalButton() {
 				onClick={() => setOpen(true)}
 				className="px-4 py-2 bg-green-600 text-white rounded-xl hover:bg-green-700 transition"
 			>
-				Diyet AI
+				Diet AI
 			</button>
 
 			{/* MODAL */}
