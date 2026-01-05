@@ -1,28 +1,28 @@
-import { db } from "./db"; // db'yi export ettiğin dosya yolu (index.ts ise ./src/db/index)
+import { db } from "./db"; // The path where you export db
 import { workouts, exercises } from "./db/schema";
 
 async function main() {
-  console.log("🌱 Veri ekleniyor...");
+  console.log("🌱 Seeding data...");
 
-  // 1. Yeni bir antrenman ekle
+  // 1. Add a new workout
   const newWorkout = await db.insert(workouts).values({
-    name: "İlk Antrenmanım: Full Body",
+    name: "My First Workout: Full Body",
     duration: 60,
   }).returning(); 
   
   const workoutId = newWorkout[0].id;
-  console.log("✅ Antrenman eklendi ID:", workoutId);
+  console.log("✅ Workout added with ID:", workoutId);
 
-  // 2. Bu antrenmana egzersiz ekle
+  // 2. Add exercises to this workout
   await db.insert(exercises).values([
     { workoutId, name: "Bench Press", weight: 60, sets: 3, reps: 10 },
     { workoutId, name: "Squat", weight: 80, sets: 4, reps: 8 },
   ]);
-  console.log("✅ Egzersizler eklendi.");
+  console.log("✅ Exercises added.");
 
-  // 3. Verileri oku ve ekrana bas
+  // 3. Read data and print to console
   const result = await db.select().from(workouts);
-  console.log("📊 Veritabanındaki Antrenmanlar:", result);
+  console.log("📊 Workouts in Database:", result);
 }
 
 main();
