@@ -6,7 +6,7 @@ const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "FitTrack Pro",
-  description: "Fitness Takip Uygulaması",
+  description: "Fitness Tracking App",
 };
 
 export default function RootLayout({
@@ -15,9 +15,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="tr">
+    <html lang="en">
       <body className={`${inter.className} antialiased bg-slate-950 text-slate-50`}>
-        {/* BURADA HİÇBİR HEADER/FOOTER OLMAMALI */}
+        {/* NO HEADER/FOOTER SHOULD BE HERE */}
         {children}
       </body>
     </html>

@@ -1,5 +1,5 @@
 // src/components/FitnessChat.tsx
-"use client"; // Bu bir istemci bileşeni (etkileşim var)
+"use client"; // Client component with interactions
 
 import { useState } from "react";
 import { Send, Bot, User } from "lucide-react";
@@ -13,25 +13,25 @@ type Message = {
 export default function FitnessChat() {
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<Message[]>([
-    { id: 1, role: "ai", text: "Merhaba! Ben Fitness asistanın. Bugün nasıl hissediyorsun? Antrenman tavsiyesi ister misin?" },
+    { id: 1, role: "ai", text: "Hello! I am your Fitness assistant. How are you feeling today? Do you want some workout advice?" },
   ]);
   const [isTyping, setIsTyping] = useState(false);
 
   const handleSend = () => {
     if (!input.trim()) return;
 
-    // 1. Kullanıcı mesajını ekle
+    // 1. Add user message
     const userMsg: Message = { id: Date.now(), role: "user", text: input };
     setMessages((prev) => [...prev, userMsg]);
     setInput("");
     setIsTyping(true);
 
-    // 2. Yapay zeka cevabını simüle et (Burayı sonra gerçek API'ye bağlarız)
+    // 2. Simulate AI response (Connect to real API later)
     setTimeout(() => {
       const aiMsg: Message = { 
         id: Date.now() + 1, 
         role: "ai", 
-        text: "Harika bir hedef! Bunu veritabanına kaydetmemi ister misin yoksa yeni bir program mı hazırlayalım?" 
+        text: "That's a great goal! Would you like me to save this or should we create a new program?" 
       };
       setMessages((prev) => [...prev, aiMsg]);
       setIsTyping(false);
@@ -40,13 +40,13 @@ export default function FitnessChat() {
 
   return (
     <div className="flex flex-col h-[600px] border border-gray-200 rounded-2xl bg-white shadow-lg overflow-hidden sticky top-4">
-      {/* Başlık */}
+      {/* Header */}
       <div className="bg-blue-600 p-4 text-white flex items-center gap-2">
         <Bot size={24} />
         <h2 className="font-bold">Fitness AI Coach</h2>
       </div>
 
-      {/* Mesaj Alanı */}
+      {/* Message Area */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50">
         {messages.map((msg) => (
           <div
@@ -73,10 +73,10 @@ export default function FitnessChat() {
             </div>
           </div>
         ))}
-        {isTyping && <div className="text-xs text-gray-400 ml-10">Yazıyor...</div>}
+        {isTyping && <div className="text-xs text-gray-400 ml-10">Typing...</div>}
       </div>
 
-      {/* Input Alanı */}
+      {/* Input Area */}
       <div className="p-3 border-t border-gray-100 bg-white">
         <form
           onSubmit={(e) => {
@@ -89,7 +89,7 @@ export default function FitnessChat() {
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Bir şeyler sor..."
+            placeholder="Ask something..."
             className="flex-1 px-4 py-2 text-sm border border-gray-300 rounded-full focus:outline-none focus:border-blue-500 transition"
           />
           <button

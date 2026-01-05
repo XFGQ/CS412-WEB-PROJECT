@@ -6,8 +6,8 @@ console.log("DB URL Kontrol:", process.env.DATABASE_URL);
 export default defineConfig({
   schema: "./db/schema.ts",
   out: "./drizzle",
-  dialect: "sqlite", // Burası artık sqlite oldu
+  dialect: "sqlite",  
   dbCredentials: {
-    url: "sqlite.db", // Veritabanı dosyasının adı
+    url: "sqlite.db",  
   },
 });

@@ -10,7 +10,9 @@
   .text-accent {
     @apply text-emerald-400;
   }
+
+  
   .bg-accent {
     @apply bg-emerald-500;
   }
-}
+} 

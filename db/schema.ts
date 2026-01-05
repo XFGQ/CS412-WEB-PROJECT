@@ -1,26 +1,24 @@
 import { sqliteTable, text, integer, real } from "drizzle-orm/sqlite-core";
 import { sql } from "drizzle-orm";
 
-// KULLANICI TABLOSU (Güncellendi)
+// USERS TABLE
 export const users = sqliteTable("users", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   fullName: text("full_name").notNull(),
   email: text("email").notNull().unique(),
   password: text("password").notNull(),
   
-  // Fiziksel Özellikler
-  age: integer("age"),             // YENİ: Yaş
-  height: real("height"),          // YENİ: Boy (cm)
-  weight: real("weight"),          // Mevcut Kilo
-  goalWeight: real("goal_weight"), // Hedef Kilo
+  // Physical Features
+  age: integer("age"),             // Age
+  height: real("height"),          // Height (cm)
+  weight: real("weight"),          // Current Weight
+  goalWeight: real("goal_weight"), // Goal Weight
   
   createdAt: text("created_at").default(sql`CURRENT_TIMESTAMP`),
   dailyCalorieGoal: integer("daily_calorie_goal").default(2000),
 });
 
-// ... Diğer tablolar (exerciseLibrary, workoutLogs vs.) aynen kalabilir ...
-// Onları silmene gerek yok, sadece users tablosunu güncelle.
-// (Eğer nutritionLogs vs. kodları lazımsa önceki mesajlardan alabilirsin, buraya sadece değişeni koydum)
+// NUTRITION LOGS TABLE
 export const nutritionLogs = sqliteTable("nutrition_logs", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   userId: integer("user_id").references(() => users.id),
@@ -33,6 +31,7 @@ export const nutritionLogs = sqliteTable("nutrition_logs", {
   date: text("date").default(sql`CURRENT_DATE`),
 });
 
+// WORKOUT LOGS TABLE
 export const workoutLogs = sqliteTable("workout_logs", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   userId: integer("user_id").references(() => users.id),
